@@ -1,0 +1,32 @@
+border a(t=1,0) { x=0; y=t ;label=2;}; // left beam
+border b(t=0,10) { x=t; y=0 ;label=1;}; // bottom of beam
+border c(t=0,1) { x=10; y=t ;label=2;}; // rigth beam
+border d(t=0,10) { x=10-t; y=1; label=2;}; // top beam
+
+real E = 110.5; // Young’s modulus
+real sigma = 0.34; // Poisson’s ratio
+real mu = E/(2*(1+sigma)); // const
+real lambda = E*sigma/((1+sigma)*(1-2*sigma)); // const
+real sqrt2 = sqrt(2.);
+func f = -241;
+func g = -5;
+int n = 10;
+mesh th = buildmesh( b(n*10)+c(n)+d(n*10)+a(n));
+plot(th);
+
+fespace Vh(th,[P1,P1]);
+Vh [uu,vv], [w,s];
+
+macro epsilon(u1,u2) [dx(u1),dy(u2),(dy(u1)+dx(u2))/sqrt2] // EOM
+macro div(u,v) ( dx(u)+dy(v) ) // EOM
+
+solve bb([uu,vv],[w,s]) = int2d(th) (
+                                lambda*( dx(w)+dy(s) ) * ( dx(uu)+dy(vv) )
+                                + 2.*mu*( epsilon(w,s)'*epsilon(uu,vv) )
+                          )
+						- int1d(th, 1) (g * s)
+                        - int2d(th) (f * s)
+                        + on(2, uu=0, vv=0)
+;
+mesh th1 = movemesh(th, [x+uu, y+vv]);
+plot(th1,wait=1);

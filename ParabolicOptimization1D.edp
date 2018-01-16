@@ -1,0 +1,66 @@
+load "ff-IpOpt"
+real T = 0.1;
+int Nx = 25, Nt = Nx; // consider t as y
+int[int] labs = [1, 2, 3, 4];
+mesh Th = square(Nx, Nt, [x, T*y], label = labs);
+fespace Vh(Th, P1);
+real a = -sqrt(5), gamma = pi ^ (-4);
+Vh wa = exp(a * pi ^ 2 * y) * sin(pi * x);
+Vh f = -pi ^ 4 * wa(x, T);
+Vh uhat = pi ^ 2 * wa(x, T);
+Vh u0 = -1.0 / (1 + a) * pi ^ 2 * wa(x, 0) * (y == 0);
+Vh qe = -pi ^ 4 * (wa(x, y) - wa(x, T));
+Vh ue = -1.0 / (1 + a) * pi ^ 2 * wa(x, y);
+Vh ze = wa(x, y) - wa(x, T);
+
+func real[int] SolveStateProblem(real[int] q){
+    Vh u, v, qq; qq[] = q;
+
+    solve SpaceTime(u, v, solver = GMRES) = 
+          int2d(Th)(dy(u)  * v + dx(u)  * dx(v)) 
+        + int2d(Th)(dy(u0) * v + dx(u0) * dx(v))
+        - int2d(Th)(f * v) - int2d(Th)(qq * v) 
+        + on(1, 2, 4, u = 0);// + on(1, u = u0);
+    u = u + u0;
+    return u[];
+}
+
+func real[int] SolveJointProblem(real[int] u){
+    Vh z, v, uu; uu[] = u;
+    Vh rsh = uu - uhat;
+
+    solve JointProblem(z, v, solver = GMRES) =
+          int2d(Th)(-dy(z) * v + dx(z) * dx(v))
+        - int2d(Th)(rsh * v) + on(2, 3, 4, z = 0);
+    return z[];
+}
+
+func real J(real[int] q) {
+    cout << "SolveStateProblem of J" << endl;
+    Vh qq; qq[] = q;
+    Vh uu; uu[] = SolveStateProblem(q);
+    //cout << "Error in L2: " << sqrt(int2d(Th)((uu - ue)^2)) << endl;
+    cout << "Gia tri J: " << 0.5 * int2d(Th)((uu - uhat) ^ 2) + 0.5 * gamma * int2d(Th)(qq ^ 2) << endl; 
+    return 0.5 * int2d(Th)((uu - uhat) ^ 2) + 0.5 * gamma * int2d(Th)(qq ^ 2);
+}
+
+func real[int] gradJ(real[int] q) {
+    cout << "SolveJointProblem of gradJ" << endl;
+    Vh qq; qq[] = q;
+    Vh zz; zz[] = SolveJointProblem(SolveStateProblem(q));
+    cout << "Error in L2: " << sqrt(int2d(Th)((zz - ze)^2)) << endl;
+    Vh res = zz + gamma * qq;
+    return res[];
+}
+
+Vh q = 0;
+IPOPT(J, gradJ, q[]);
+
+cout << ze[].max << endl;
+cout << ue[].max << endl;
+plot(qe, wait = 1, dim=3d);
+plot(q, qe, wait = 1, dim=3d);
+
+plot(qe, wait = 1, dim=3d);
+plot(q, qe, wait = 1, dim=3d);
+cout << "Error: " << sqrt(int2d(Th)((qe - q) ^ 2)) << endl;

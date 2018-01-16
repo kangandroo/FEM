@@ -1,0 +1,32 @@
+border C1(t=0,2*pi) {x=42*cos(t);y=42*sin(t); label=1;}
+border C2(t=0,2*pi) {x=50*cos(t);y=50*sin(t); label=2;}
+int n=100;
+mesh Th = buildmesh(C1(-n)+C2(2*n));
+plot(Th);
+fespace Vh(Th,P2);
+Vh u,v,uu,vv;
+real sqrt2=sqrt(2.);
+macro epsilon(u1,u2) [dx(u1),dy(u2),(dy(u1)+dx(u2))/sqrt2] //
+macro div(u,v) ( dx(u)+dy(v) ) //
+
+real E = 200e3, nu= 0.3, mu= E/(2*(1+nu));
+real lambda = E*nu/((1+nu)*(1-2*nu));
+func f1 = 10*x;
+func f2 = 10*y;
+func g  = -9.81;
+solve lame([u,v],[uu,vv])= 
+	int2d(Th)(
+		lambda*(dx(u)+dy(v))*div(uu,vv)
+		+2.*mu*( epsilon(u,v)'*epsilon(uu,vv) ) )
+		- int1d(Th,1)(f1*uu+f2*vv)
+		- int1d(Th,1)(u*uu+v*vv);
+//		- int2d(Th)(g*vv)
+//		+ on(2,u=0,v=0);
+plot([u,v],wait=1);
+mesh th1 = movemesh(Th, [x+u, y+v]);
+plot(th1,wait=1);
+
+real dxmin = u[].min;
+real dymin = v[].min;
+cout << " - dep. max x = "<< dxmin<< " y = " << dymin << endl;
+cout << " dep. (20,0) = " << u(20,0) << " " << v(20,0) << endl;

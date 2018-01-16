@@ -1,0 +1,55 @@
+load "medit" 
+load "msh3"
+// Build layer example ... 
+// -------------------------
+// { // a first simple exemple 
+// int n=1;
+
+// border circle(t=0,2*pi){x=cos(t); y=sin(t);label=1;} 
+// border a1(t=0,1){x=1;y=t;}
+// border a2(t=0,1){x=t;y=0;}
+// border a3(t=0,1){x=1-t;y=1;}
+// border a4(t=0,1){x=0;y=1-t;}
+// mesh Thx = buildmesh(a1(n)+a2(n)+a3(n)+a4(n));
+// int reg0 = Thx(0,0).region;// get the region number on 2 mesh . 
+// //  so  reg0-> 3 up
+// //  and reg0 -> 2 down
+// // label 1-> 1 mid.
+// int[int] lup=[reg0,3];   //2d  region reg0 become  label 3 
+// int[int] ldown=[reg0,2]; //2d region reg0  become  label 2
+// int[int] lmid=[1,1 ]; // //2d label      1 become  label 2
+// mesh3 Th=buildlayers(Thx,20*n, zbound=[0,5], 
+//       labelmid=lmid, labelup = lup, labeldown = ldown,
+//       transfo=[x,(4+y)*cos(z*pi/10),(4+y)*sin(z*pi/10)]);
+// medit("th",Th);
+// }
+
+{ // a second exemple the full torus 
+int n=20;
+
+border a1(t=0,1){x=1;y=t;label=1;}
+border a2(t=0,1){x=t;y=0;label=45;} // biên trong
+border a3(t=0,1){x=1-t;y=1;label=99;} // biên ngoài 
+border a4(t=0,1){x=0;y=1-t;label=1;} 
+mesh Thx = buildmesh(a1(n)+a2(n)+a3(n)+a4(n));
+plot(Thx, wait=1);
+int reg0 = Thx(0,0).region;// get the region number on 2 mesh . 
+// label 1-> 1 mid.
+int[int] lmid=[1,1 ]; // //2d label      1 become  label 2
+mesh3 Th=buildlayers(Thx,20*4, zbound=[0,5*4], 
+      labelmid=lmid,
+      transfo=[x,(4+y)*cos(z*pi/10),(4+y)*sin(z*pi/10)],
+      facemerge=1);// to remove the commun face up dawn 
+plot(Th);
+}
+// {// a cylinder with rotation a a plane with collapse of element cloase to the axe.
+//   int nn= 10;
+//   mesh Th2 = square(nn,nn);
+//   real coefmin = 1./nn; // 6 point on axes 
+//   mesh3 Th=   buildlayers(Th2,2*pi*nn, zbound=[0,2*pi],
+//                           coef=max(coefmin,y), // the number of layers is proportionnal to  y 
+//               transfo=[x, y*cos(z), y*sin(z)] ,facemerge=1); 
+//   medit("Th",Th); 
+    
+// }
+ 

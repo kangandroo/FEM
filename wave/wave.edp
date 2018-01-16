@@ -1,0 +1,52 @@
+// phuong trinh song co dang
+// giong nhiet nhung co theo dao ham cap 2 theo thoi gian (xem trang 34 sach)
+// cong thuc nghiem nhu heat
+// ko co 2 dieu kien bien nen thay moi u
+// khi co dk bien thi hoi hoang
+
+load "medit"
+
+real T = 1, dt = 0.01, t = 0, L2error = 0;
+
+int n = 15, i = 0;
+
+mesh Th=square(n,n);
+
+plot(Th, wait=1);
+
+func ut = sin(pi*x)*sin(pi*y)*pi*sqrt(2); // de bai cho ut
+
+func u0 = 0; //u tai toi diem t. de bai cho
+
+func uex = sin(pi*x)*sin(pi*y)*sin(t*pi*sqrt(2)); // de bai cho
+
+func f = 0;
+
+fespace Vh(Th,P2);
+Vh u, v, u1 = u0, u2;
+
+solve sol(u2, v) = int2d(Th)(u2 * v)
+                 - int2d(Th)((dt * ut + u1) * v);
+
+//problem a(u, v) = int2d(Th)(u * v)
+//                - int2d(Th)((f * dt * dt + 2 * u2 - u1) * v)
+//                + int2d(Th)(dt * dt * (dx(u2) * dx(v) + dy(u2) * dy(v)))
+//                + on( 1, 2, 3, 4, u = 0);
+
+problem a(u, v) = int2d(Th)(u * v)
+				+ int2d(Th)(dt * dt / 2 * (dx(u2) * dx(v) + dy(u2) * dy(v)))
+                - int2d(Th)((f * dt * dt + 2 * u2 - u1) * v)
+                + int2d(Th)(dt * dt / 2 * (dx(u2) * dx(v) + dy(u2) * dy(v)))
+                + on( 1, 2, 3, 4, u = 0);
+
+for(t = 0; t < T; t += dt) {
+    a;
+    u1 = u2;
+    u2 = u;
+    L2error = sqrt(int2d(Th)((u-uex)^2));
+    //savemesh(Th,"Wave." + i + ".mesh");//save file
+    //savesol("Wave." + i + ".sol", Th, u);//care when run
+    cout << t << "L2 error: " << L2error << endl;
+    i = i + 1;
+    plot(u);
+}

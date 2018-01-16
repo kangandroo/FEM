@@ -1,0 +1,67 @@
+load "ff-IpOpt"
+load "msh3"
+real T = 0.1;
+int Nx = 40, Ny = Nx, Nt = Nx; // consider t as y
+
+mesh3 Th = cube(Nx, Ny, Nt, [x, y, T*z]);
+fespace Vh(Th, P1);
+real a = -sqrt(5), gamma = pi ^ (-4);
+Vh wa = exp(a * pi ^ 2 * z) * sin(pi * x)* sin(pi * y);
+Vh f = -pi ^ 4 * wa(x, y, T);
+Vh uhat = 2 * pi ^ 2 * wa(x, y, T);
+Vh u0 = -1.0 / (2 + a) * pi ^ 2 * wa(x, y, 0) * (z == 0);
+Vh qe = -pi ^ 4 * (wa(x, y, z) - wa(x, y, T));
+Vh ue = -1.0 / (2 + a) * pi ^ 2 * wa(x, y, z);
+Vh ze = wa(x, y, z) - wa(x, y, T);
+
+func real[int] SolveStateProblem(real[int] q){
+    Vh u, v, qq; qq[] = q;
+
+    solve SpaceTime(u, v, solver = GMRES) = 
+          int3d(Th)(dz(u)  * v + dx(u)  * dx(v) + dy(u)  * dy(v)) 
+        + int3d(Th)(dz(u0) * v + dx(u0) * dx(v) + dy(u0) * dy(v))
+        - int3d(Th)(f * v) - int3d(Th)(qq * v) 
+        + on(1, 2, 3, 4, 5, u = 0);// + on(1, u = u0);
+    u = u + u0;
+    return u[];
+}
+
+func real[int] SolveJointProblem(real[int] u){
+    Vh z, v, uu; uu[] = u;
+    Vh rsh = uu - uhat;
+
+    solve JointProblem(z, v, solver = GMRES) =
+          int3d(Th)(-dz(z) * v + dx(z) * dx(v) + dy(z) * dy(v))
+        - int3d(Th)(rsh * v) + on(1, 2, 3, 4, 6, z = 0);
+    return z[];
+}
+
+func real J(real[int] q) {
+    //cout << "SolveStateProblem of J" << endl;
+    Vh qq; qq[] = q;
+    Vh uu; uu[] = SolveStateProblem(q);
+    //cout << "Error in L2: " << sqrt(int2d(Th)((uu - ue)^2)) << endl;
+    //cout << "Gia tri J: " << 0.5 * int2d(Th)((uu - uhat) ^ 2) + 0.5 * gamma * int2d(Th)(qq ^ 2) << endl; 
+    return 0.5 * int3d(Th)((uu - uhat) ^ 2) + 0.5 * gamma * int3d(Th)(qq ^ 2);
+}
+
+func real[int] gradJ(real[int] q) {
+    //cout << "SolveJointProblem of gradJ" << endl;
+    Vh qq; qq[] = q;
+    Vh zz; zz[] = SolveJointProblem(SolveStateProblem(q));
+    //cout << "Error in L2: " << sqrt(int2d(Th)((zz - ze)^2)) << endl;
+    Vh res = zz + gamma * qq;
+    return res[];
+}
+
+Vh q = 0;
+IPOPT(J, gradJ, q[]);
+
+cout << ze[].max << endl;
+cout << ue[].max << endl;
+//plot(qe, wait = 1, dim=3d);
+//plot(q, qe, wait = 1, dim=3d);
+
+//plot(qe, wait = 1, dim=3d);
+//plot(q, qe, wait = 1, dim=3d);
+cout << "Error: " << sqrt(int3d(Th)((qe - q) ^ 2)) << endl;

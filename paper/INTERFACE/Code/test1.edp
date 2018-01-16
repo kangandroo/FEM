@@ -1,0 +1,84 @@
+load "medit"
+
+border a1(t=-1,1){x=1;y=t;label=0;}
+border a2(t=-1,1){x=t;y=-1;label=0;}
+border a3(t=-1,1){x=-t;y=1;label=0;}
+border a4(t=-1,1){x=-1;y=-t;label=0;}
+
+real R = 0.5;
+
+border p(t=0,2*pi){x=R*cos(t); y=R*sin(t); label=1;}
+
+int n = 40;
+
+mesh Th = buildmesh(a1(n)+a2(n)+a3(n)+a4(n)+p(4*n));
+savemesh(Th,"Th.mesh");
+real E, nu;
+real Ep = 100, En = 1;
+real nup = 0.3, nun = 0.3;
+// func lambda = E*nu/((1+nu)*(1-2*nu));
+// func mu = E/(2*(1+nu));
+
+fespace Vh(Th,P1);
+Vh u,v,uu,vv,uex1,uex2,lambda,mu;
+real sqrt2=sqrt(2.);
+macro epsilon(u1,u2) [dx(u1),dy(u2),(dy(u1)+dx(u2))/sqrt2] //
+macro div(u,v) ( dx(u)+dy(v) ) //
+func g = 0;
+func f = (x^2+y^2)/100 + (1-1/100)*R^2;
+
+for (int i = 0; i<Th.nt;i++) {
+    for (int j = 0; j < 3; j++) {
+		if(Th[i].label == 0) {
+            lambda[][Vh(i,j)] = En;
+            mu[][Vh(i,j)] = En;
+    	} else {
+            lambda[][Vh(i,j)] = Ep;
+            mu[][Vh(i,j)] = Ep;
+    	}
+	}
+}
+
+for (int i = 0; i < Th.nt;i++) {
+	for (int j = 0; j < 3; j++) {
+        real r = sqrt(Th[i][j].x^2 + Th[i][j].y^2);
+		if(r <= R) {
+            uex1[][Vh(i,j)] = r^2;
+            uex2[][Vh(i,j)] = r^2;
+    	} else {
+            uex1[][Vh(i,j)] = r^2/100+(1-1/100)*R^2;
+            uex2[][Vh(i,j)] = r^2/100+(1-1/100)*R^2;
+    	}
+	}
+}
+
+plot(lambda);
+
+cout << mu << endl;
+solve lame([u,v],[uu,vv])= int2d(Th)(
+	lambda*div(u,v)*div(uu,vv)
+	+2.*mu*( epsilon(u,v)'*epsilon(uu,vv) ) )
+	//- int1d(Th,1)(g*uu+g*vv)
+    + on(0,u=f,v=f);
+
+for (int i = 0; i < Th.nt;i++) {
+	for (int j = 0; j < 3; j++) {
+        real r = sqrt(Th[i][j].x^2 + Th[i][j].y^2);
+		if(r <= R) {
+            uex1[][Vh(i,j)] = r^2;
+            uex2[][Vh(i,j)] = r^2;
+    	} else {
+            uex1[][Vh(i,j)] = r^2/100+(1-1/100)*R^2;
+            uex2[][Vh(i,j)] = r^2/100+(1-1/100)*R^2;
+    	}
+	}
+}
+
+real L2error = 0;
+
+L2error = sqrt(int2d(Th)((uex1-u)^2+(uex2-v)^2));
+cout << n << "L2 error: " << L2error << endl;
+plot([u,v], value=true, fill=true, wait=true);
+mesh Th1 = movemesh(Th, [x+u, y+v]);
+
+plot(Th1);

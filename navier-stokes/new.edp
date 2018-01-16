@@ -1,0 +1,56 @@
+verbosity=0;
+border a0(t=2,1){ x=0; y=t; label=1;}
+border a1(t=0,5){ x=t; y=1; label=2;}
+border a2(t=1,0){ x=5; y=t; label=2;}
+border a3(t=5,20){ x=t; y=0; label=2;}
+border a4(t=0,2){ x=20; y=t; label=3;}
+border a5(t=20,0){ x=t; y=2; label=4;}
+int n=5;
+mesh Th= buildmesh(a0(n)+a1(5*n)+a2(n)+a3(15*n)+a4(2*n)+a5(20*n));
+
+func dt = 0.01;
+func T = 2;
+func ux = y*(1-y);
+func uy = 0.;
+func nu = 1./400;
+
+fespace Uh(Th,P2); Uh u1,u2,v1,v2,uold1,uold2;
+fespace Ph(Th,P1); Ph p,q;
+Uh psi,phi;
+
+problem NS (u1,u2,p,v1,v2,q,solver=Crout) =
+    int2d(Th)(
+        1/dt * (u1*v1 + u2*v2)
+        + nu * ( dx(u1)*dx(v1) + dy(u1)*dy(v1)
+        + dx(u2)*dx(v2) + dy(u2)*dy(v2))
+        - p*q*(0.000001)
+        - p*dx(v1) - p*dy(v2)
+        - dx(u1)*q - dy(u2)*q
+    )
+    + int2d(Th) ( 
+        - 1/dt*convect([uold1,uold2],-dt,uold1)*v1 
+        - 1/dt*convect([uold1,uold2],-dt,uold2)*v2 
+    )
+    + on(1,u1=ux,u2=uy)
+    + on(2,4,u1=0,u2=0); 
+
+problem streamlines(psi,phi) =
+    int2d(Th)( 
+        dx(psi)*dx(phi) + dy(psi)*dy(phi)
+    )
+    + int2d(Th)( 
+        -phi*(dy(u1)-dx(u2))
+    )
+    + on(1,2,3,4,psi=0);
+
+int i = 0;
+int imax = T/dt;
+for(int i = 0; i <= imax; i++) {
+    uold1=u1;
+    uold2=u2;
+    NS;
+    streamlines;
+    if(i%10 == 0) {
+        plot(psi);
+    }
+}

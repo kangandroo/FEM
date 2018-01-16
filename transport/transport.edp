@@ -1,0 +1,30 @@
+//dang transport: 
+//phuong trinh tai lieu trang 45.
+// de bai cho u1 u2
+border C(t=0, 2*pi) { x=cos(t); y=sin(t); }; // the unit circle
+real z = pi/4, sqrt2 = sqrt(2.); //
+border C2(t=0, 2*pi) { x=0.5*cos(t); y=0.5*sin(t); }; // the unit circle
+border C1(t=0, 2*pi) { x =  0.3 * sqrt2 * cos(z) + 0.1 * cos(t); y = 0.3 * sqrt2 * sin(z) + 0.1 * sin(t); }
+mesh Th = buildmesh(C(50) + C2(100)); // triangulates the disk
+fespace Vh1(Th,P1);
+Vh1 u00 = 0;// 
+real dt = 0.17,t=0; // time step
+for (int m=0; m < 10*pi/dt; m++) {
+    t += dt;
+	z += dt;
+	mesh Th = buildmesh(C(100)); // thua hon
+	//mesh Th = buildmesh(C(10) + C1(100)); // triangulates the disk
+	fespace Vh(Th,P1);
+	Vh u0;// give u0
+	if(m == 0) {
+		u0 = sqrt((x-0.3)^2 +(y-0.3)^2);
+	} else {
+		u0 = u00;
+	}
+	real dt = 0.17,t=0; // time step
+	Vh a1 = -y, a2 = x; // rotation velocity, a1 la chieu x, a2 la chieu y. vd - y x la huong phap tuyen
+	Vh u; // um+1
+    u = convect([a1, a2], -dt, u0); // um+1 = um(Xm(x)) // ko thay doi
+	u00 = u;
+    plot(u, cmm=" t="+t + ", min=" + u[].min + ", max=" + u[].max, dim=3, wait=0);
+};

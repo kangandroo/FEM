@@ -1,0 +1,37 @@
+border C1(t=0,-1) { x=t;y=t;label=1;}
+border C2(t=-1,0) { x=t;y=-t-2;label=1;}
+border C3(t=0,2) { x=t;y=t-2;label=1;}
+border C4(t=0,2) { x=2-t;y=t;label=1;}
+border C5(t=0,-1) { x=t;y=2+t;label=1;}
+border C6(t=0,1) { x=-1+t;y=1-t;label=1;}
+border C7(t=0,1) {x=2; y =0; label=2;}
+border C8(t=0,1) {x=-2;y=0;label=3;}
+int n= 20;
+mesh Th = buildmesh(C1(n)+C2(n)+C3(n)+C4(n)+C5(n)+C6(n));
+//plot(Th);
+real f=2;
+fespace Vh(Th,P2);
+Vh u,v,uu,vv;
+Vh f1 = (x==0)*(y==2)*f, 
+f2 = (x==0)*(y==-2)*f;
+real sqrt2=sqrt(2.);
+macro epsilon(u1,u2) [dx(u1),dy(u2),(dy(u1)+dx(u2))/sqrt2] // EOM
+macro div(u,v) ( dx(u)+dy(v) ) // EOM
+
+real E = 1e5, nu = 0.3, mu= E/(2*(1+nu));
+real lambda = E*nu/((1+nu)*(1-2*nu)); //
+solve lame([u,v],[uu,vv])= int2d(Th)(
+							lambda*div(u,v)*div(uu,vv)
+							+2.*mu*( epsilon(u,v)'*epsilon(uu,vv) ) )
+							//- int2d(Th)(f*vv)
+							- int1d(Th)(-f1*vv)
+							- int1d(Th)(f2*vv);
+							//+ on(4,u=0,v=0);
+real coef=0;
+plot([u,v],wait=1,ps="lamevect.eps",coef=coef);
+mesh th1 = movemesh(Th, [x+u*coef, y+v*coef]);
+plot(th1,wait=1,ps="lamedeform.eps");
+real dxmin = u[].min;
+real dymin = v[].min;
+cout << " - dep. max x = "<< dxmin<< " y=" << dymin << endl;
+cout << " dep. (20,0) = " << u(20,0) << " " << v(20,0) << endl;

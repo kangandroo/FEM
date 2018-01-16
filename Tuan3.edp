@@ -1,0 +1,45 @@
+// Bai 1
+
+border C11(t=0,1){x=t;y=0;}
+border C12(t=0,1){x=1;y=t;}
+border C13(t=0,1){x=1-t;y=1;}
+border C14(t=0,1){x=0;y=1-t;}
+int n = 50;
+func f1 = -2*(x^2+y^2-x-y);
+mesh Th1 = buildmesh(C11(n)+C12(n)+C13(n)+C14(n));
+fespace Vh1(Th1,P1);
+Vh1 u1,v1;
+solve P(u1,v1) = // defines the PDE
+int2d(Th1)(dx(u1)*dx(v1) + dy(u1)*dy(v1)) // bilinear part
+ - int2d(Th1)(f1*v1) // right hand side
+ + on(C11,u1=0) + on(C12,u1=0) + on(C13,u1=0) + on(C14,u1=0);
+plot(u1);
+
+// Bai 2
+
+border C21(t=0,pi){x=t;y=0;}
+border C22(t=0,pi){x=pi-t;y=t;}
+border C23(t=0,pi){x=0;y=pi-t;}
+func f2 = 2*sin(x+y);
+mesh Th2 = buildmesh(C21(n)+C22(n)+C23(n));
+fespace Vh2(Th2,P1);
+Vh2 u2,v2;
+solve P2(u2,v2) = // defines the PDE
+int2d(Th2)(dx(u2)*dx(v2) + dy(u2)*dy(v2)) // bilinear part
+ - int2d(Th2)(f2*v2) // right hand side
+ + on(C21,u2=0) + on(C22,u2=0) + on(C23,u2=0);
+plot(u2);
+
+// Bai 3
+
+border C3(t=0,2*pi){x=cos(t); y=sin(t);}
+func f3 = -1;
+mesh Th3 = buildmesh (C3(n));
+fespace Vh3(Th3,P1);
+Vh3 u3,v3;
+solve P3(u3,v3) = // defines the PDE
+int2d(Th3)(dx(u3)*dx(v3) + dy(u3)*dy(v3)) + int1d(Th3,C3)(u3*v3) // bilinear part
+ - int2d(Th3)(f3*v3) // right hand side
+;
+plot(u3);
+

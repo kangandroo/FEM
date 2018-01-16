@@ -1,0 +1,31 @@
+border a1(t=0,2){x=2;y=t;label=3;}
+border a2(t=0,2){x=t;y=0;label=1;}
+border a3(t=0,2){x=2-t;y=2;label=2;}
+border a4(t=0,2){x=0;y=2-t;label=3;} 
+
+border a5(t=0,2*pi){x=0.3*cos(t)+1; y=0.5*sin(t)+1; label=3;}
+border a6(t=0,2*pi){x=(0.5+0.2*sin(5*t))*cos(t)+1; y=(0.5+0.2*sin(5*t))*sin(t)+1; label=3;}
+
+int n =50;
+
+mesh Th = buildmesh(a1(n)+a2(n)+a3(n)+a4(n)+a6(-4*n));
+plot(Th);
+fespace Vh(Th,P2);
+Vh u,v,uu,vv;
+real sqrt2=sqrt(2.);
+macro epsilon(u1,u2) [dx(u1),dy(u2),(dy(u1)+dx(u2))/sqrt2] //
+macro div(u,v) ( dx(u)+dy(v) ) //
+real dt=0.01, t=0;
+real E = 10^9, nu = 0.3, mu= E/(2*(1+nu));
+real lambda = E*nu/((1+nu)*(1-2*nu));
+func f = -10^7;
+
+solve lame([u,v],[uu,vv])= int2d(Th)(
+	lambda*div(u,v)*div(uu,vv)
+	+2.*mu*( epsilon(u,v)'*epsilon(uu,vv) ) )
+	- int1d(Th,2)(f*vv)
+    + on(1,u=0,v=0);
+
+plot([u,v], value=true, fill=true);
+mesh th1 = movemesh(Th, [x+u, y+v]);
+plot(th1,wait=1);

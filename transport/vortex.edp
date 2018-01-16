@@ -1,0 +1,25 @@
+load "medit"
+border a1(t=0,1){x=1;y=t;}
+border a2(t=0,1){x=t;y=0;}
+border a3(t=0,1){x=1-t;y=1;}
+border a4(t=0,1){x=0;y=1-t;}
+int n = 20;
+int i = 0;
+mesh Th = buildmesh(a1(n)+a2(n)+a3(n)+a4(n));
+fespace Vh(Th,P1);
+Vh u0 = 0.15*(x-0.5)^2 +0.15*(y-0.75)^2;
+real dt = 0.1,t=0,T=8;
+Vh u1 = 0;
+Vh u2 = 0;
+Vh u;
+for (int m=0; m <= T/dt; m++) {
+	Th=adaptmesh(Th,u0,IsMetric=1,splitpbedge=1,nbvx=10000);
+	u1 = -sin(pi*x)^2*sin(2*pi*y)*cos(pi*t/T);
+	u2 =  sin(pi*y)^2*sin(2*pi*x)*cos(pi*t/T);
+	u=convect([u1,u2],-dt,u0);
+	savemesh(Th,"Vortex." + i + ".mesh");//save file
+	savesol("Vortex." + i + ".sol", Th, u);//care when run
+	u0=u;
+	t += dt;
+	i++;
+};

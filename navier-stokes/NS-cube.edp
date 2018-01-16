@@ -1,0 +1,59 @@
+include "cube.idp"
+int[int] Nxyz=[5,5,5];
+real [int,int] Bxyz=[[0.,1.],[0.,1.],[0.,1.]];
+int [int,int] Lxyz=[[99,2],[2,2],[2,2]];
+mesh3 Th=Cube(Nxyz,Bxyz,Lxyz);
+mesh Th2 = square(10,10);
+fespace Vh(Th,P2);
+Vh ux,uz;
+func dt = 0.01;
+func nu = 0.0015;
+func T = 2;
+
+fespace Uh(Th,P2);
+Uh u1,u2,u3,v1,v2,v3,uold1,uold2,uold3;
+
+fespace Ph(Th,P1); Ph p,q;
+Uh psi,phi;
+
+problem NS (u1,u2,u3,p,v1,v2,v3,q,solver=Crout) =
+int3d(Th)(
+    1/dt * (u1*v1 + u2*v2 + u3*v3)
+    + nu * ( dx(u1)*dx(v1) + dy(u1)*dy(v1) + dz(u1)*dz(v1)
+    + dx(u2)*dx(v2) + dy(u2)*dy(v2) + dz(u2)*dz(v2))
+    - p*q*(0.000001)
+    - p*dx(v1) - p*dy(v2) - p*dz(v3)
+    - dx(u1)*q - dy(u2)*q - dz(u3)*q
+)
++ int3d(Th) ( 
+    - 1/dt*convect([uold1,uold2,uold3],-dt,uold1)*v1 
+    - 1/dt*convect([uold1,uold2,uold3],-dt,uold2)*v2
+    - 1/dt*convect([uold1,uold2,uold3],-dt,uold3)*v3 
+)
++ on(99,u1=1,u2=0,u3=0)
++ on(2,u1=0,u2=0,u3=0); 
+
+// problem streamlines(psi,phi) =
+// int3d(Th)( 
+//     dx(psi)*dx(phi) + dy(psi)*dy(phi) + dz(psi)*dz(phi)
+// )
+// + int3d(Th)( 
+//     -phi*(dy(u1)-dx(u2)-dz(u3))
+// )
+// + on(2,99,psi=0);
+
+int i = 0;
+int imax = T/dt;
+for(int i = 0; i <= imax; i++) {
+uold1=u1;
+uold2=u2;
+NS;
+//streamlines;
+if(i%10 == 0) {
+    ux = u1(x, 0.5, z);
+    uz = u3(x, 0.5, z);
+    //plot([u1, u2, u3]);
+    plot([ux,uz]);
+    //plot(psi);
+}
+}

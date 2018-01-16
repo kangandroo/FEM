@@ -1,0 +1,28 @@
+load "medit"
+
+real L2error = 0;
+
+int n = 80, i = 0; //Thay n = 10, 20, 40, 80
+
+mesh Th= square(n,n);
+
+plot(Th, wait=1);
+
+func g = 0;
+
+func f = (1+2*pi^2)*sin(pi*x)*sin(pi*y); //Hàm f
+
+func uex = sin(pi*x)*sin(pi*y); // u chính xác
+
+fespace Vh(Th, P2);
+Vh u, v;
+
+solve a(u, v) = int2d(Th)(u*v + dx(u)*dx(v) + dy(u)*dy(v))
+- int2d(Th)(f*v)
++ on(1, 2, 3, 4, u=g);
+
+L2error = sqrt(int2d(Th)((uex-u)^2));
+
+cout << n << "L2 error: " << L2error << endl;
+
+plot(u);

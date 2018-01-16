@@ -1,0 +1,90 @@
+\begin{thebibliography}{10}
+
+\bibitem{ABF97}
+G.~Allaire, E.~Bonnetier, G.~Francfort, and F.~Jouve.
+\newblock Shape optimization by the homogenization method.
+\newblock {\em Numer. Math.}, 76:27--68, 1997.
+
+\bibitem{AJT04}
+G.~Allaire, F.~Jouve, and A.M. Toader.
+\newblock Structural optimization using shape sensitivity analysis and a
+  level-set method.
+\newblock {\em Journal of Computational Physics}, 194:363--393, 2004.
+
+\bibitem{TIT-07}
+\begin{otherlanguage}{vietnamese} Trần~Ích Thịnh and Ngô Như~Khoa
+  \end{otherlanguage}.
+\newblock {\em \begin{otherlanguage}{vietnamese} Phương pháp phần tử
+  hữu hạn \end{otherlanguage}}.
+\newblock \begin{otherlanguage}{vietnamese} Hà Nội \end{otherlanguage},
+  2007.
+
+\bibitem{Bor90}
+C.~Borgers.
+\newblock A triangulation algorithm for fast elliptic solvers based on domain
+  imbedding.
+\newblock {\em SIAM J. Numer. Anal.}, 27:1187--1196, 1990.
+
+\bibitem{LAX-1987}
+P.~G Ciarlet.
+\newblock {\em The finite element method for elliptic problems}.
+\newblock Amsterdam: North-Holland, 1987.
+
+\bibitem{FS96}
+K.~Feng and Z.~Shi.
+\newblock Mathematical theory of elastic structures.
+\newblock {\em Science Press}, 1996.
+
+\bibitem{GLL08}
+Y.~Gong, B.~Li, , and Z.~Li.
+\newblock Immersed-interface finite-element methods for elliptic interface
+  problems with non-homogeneous jump conditions.
+\newblock {\em SIAM J. Numer. Anal.}, 46:472--495, 2008.
+
+\bibitem{Koko-2007}
+Jonas Koko.
+\newblock Vectorized matlab codes for linear two-dimensional elasticity.
+\newblock {\em Scientific Programming}, 15:157--172, 2007.
+
+\bibitem{LAX-1994}
+Stig Larsson and Vidar Thomée.
+\newblock {\em The mathematical theory of finite element methods. Texts in
+  Applied Mathematics}.
+\newblock Springer, 2009.
+
+\bibitem{LLW03}
+Z.~Li, T.~Lin, and X.~Wu.
+\newblock New cartesian grid methods for interface problem using finite element
+  formulation.
+\newblock {\em Numer. Math.}, 96:61--98, 2003.
+
+\bibitem{Sad05}
+M.H. Sadd.
+\newblock {\em Elasticity: Theory, Application and Numerics}.
+\newblock Amsterdam: Elsevier Butterworth Heinemann, 2005.
+
+\bibitem{TG85}
+S.~P. Timoshenko and J.~N. Goodier.
+\newblock {\em Theory of Elasticity}.
+\newblock McGraw-Hill, New York, 1985.
+
+\bibitem{XILT08}
+H.~Xie, K.~Ito, Z.~Li, and J.~Toivanen.
+\newblock A finite element method for interface problems with locally modified
+  triangulation.
+\newblock {\em Contemporary Mathematics}, 466:179--190, 2008.
+
+\bibitem{HUI-2011}
+HUI XIE, ZHILIN LI, , and ZHONGHUA QIAO.
+\newblock A finite element method for elasticity interface problems with
+  locally modified triangulations.
+\newblock {\em International Journal Of Numerical Analysis And Modeling},
+  8(2):189--200, 2011.
+
+\bibitem{Yu86}
+D.~Yu.
+\newblock A system of plane elasticity canonical integral equations and its
+  application.
+\newblock {\em J. Comp. Math.}, 4:200--211, 1986.
+
+\end{thebibliography}

@@ -1,0 +1,41 @@
+load "medit"
+
+real T = 1, dt = 0.01, t = 0, L2error = 0;
+
+int n = 20, i = 0;
+
+mesh Th= square(n,n);
+
+plot(Th, wait=1);
+
+//region: điều kiện bài toán
+func g = 0;  //Điều kiện biên Dirichlet
+
+func sigma = 0; //Điều kiện Newman
+
+func f = (1+2*pi^2)*exp(t)*sin(pi*x)*sin(pi*y); //Hàm f
+
+func u0 = sin(pi*x)*sin(pi*y); // u tại t=0
+
+func uex = exp(t)*sin(pi*x)*sin(pi*y); // u chính xác
+//endregion
+
+fespace Vh(Th, P2);
+Vh u=u0, v, uold;
+
+problem a(u, v) = int2d(Th)(u*v/dt + dx(u)*dx(v) + dy(u)*dy(v))
+- int2d(Th)(f*v + uold*v/dt)
+//Nếu không có điều kiện Newman thì xóa dòng dưới. Label là phần biên sử dụng điều kiện Newman
+- int1d(Th, Label)(sigma*v)
++ on(1, 2, 3, 4, u=g);
+
+for(t = 0; t < T; t += dt) {
+    uold=u; // uold ≡ un−1 = un ≡u
+    a;
+    L2error = sqrt(int2d(Th)((uex-u)^2));
+    //savemesh(Th,"Heat." + i + ".mesh");//save file*/
+    //savesol("Heat." + i + ".sol", Th, u);//care when run
+    cout << t << "L2 error: " << L2error << endl;
+    plot(u);
+	  i = i + 1;
+}

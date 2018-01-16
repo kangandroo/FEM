@@ -1,0 +1,49 @@
+
+// medit Thexact -a 1 100
+// medit Thapprox -a 1 100
+
+load "medit"
+
+func u0 = sin(pi*x)*sin(pi*y);
+
+mesh Th = square(50, 50);
+savemesh(Th, "Thexact.mesh");
+savemesh(Th, "Thapprox.mesh");
+
+real T = 1;
+real dt = 0.01;
+
+int i = 1;
+
+fespace Vh(Th, P1);
+Vh u = u0, v, uold, uexact;
+
+for(real t = 0; t <= T; t += dt){
+
+	// Mo phong nghiem chinh xac
+	func ue = exp(t)*sin(pi*x)*sin(pi*y);
+	for(int iter = 0; iter < Th.nv; iter++){
+		uexact[][iter] =  ue(Th(iter).x, Th(iter).y);
+	}
+
+	savesol("Thexact." + string(i) + ".sol", Th, uexact);
+	//savemesh(Th, "Thexact." + string(i) + ".mesh");
+
+
+	// Mo phong nghiem gan dung
+	func f = (1+2*pi^2)*exp(t)*sin(pi*x)*sin(pi*y);
+	uold = u;
+	
+	solve Laplace(u, v) = int2d(Th)(u*v/dt + dx(u)*dx(v) + dy(u)*dy(v))
+						  - int2d(Th)(f*v + uold*v/dt)
+						  + on(1, 2, 3, 4, u=0);
+
+	savesol("Thapprox." + string(i) + ".sol", Th, u);
+	//savemesh(Th, "Thapprox." + string(i) + ".mesh");
+
+	//cout << "Min: " << uexact[].min << " *** " << u[].min << endl;
+	//cout << "Max: " << uexact[].max << " *** " << u[].max << endl;
+	cout << "L2 Error: " << sqrt(int2d(Th)((uexact-u)^2)) << endl;
+	
+	i = i + 1;
+}

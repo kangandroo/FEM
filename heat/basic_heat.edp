@@ -1,0 +1,20 @@
+int n = 50;
+
+border C3(t=0,2*pi){x=cos(t); y=sin(t); label=10;}
+
+func f3 = -1; // hàm f
+func g = 0; //điều kiện biên Dirichlet
+func sigma = 1; //điều kiện biên pháp tuyến Newman
+
+mesh Th3 = buildmesh (C3(n));
+
+fespace Vh3(Th3,P1);
+
+Vh3 u3,v3;
+
+solve P3(u3,v3) = // defines the PDE
+int2d(Th3)(dx(u3)*dx(v3) + dy(u3)*dy(v3))// bilinear part
+ - int2d(Th3)(f3*v3) - int1d(Th3, 10)(sigma*u3*v3) // right hand side
+ + on (C3, u3 = g)
+;
+plot(u3);

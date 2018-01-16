@@ -1,0 +1,52 @@
+border C1(t=0,0.18){x = t; y = 0; label = 1;}
+border C2(t=0.02,0.08){x = 0.4; y = t; label = 2;}
+border C3(t=0,0.18){x = 0.18-t; y = 0.1; label = 3;}
+border C4(t=0,0.1){x = 0; y = 0.1-t; label = 4;}
+
+border C5(t=0,2*pi) {x=0.02*cos(t)+0.2; y=0.02*sin(t)+0.05; label=1;}
+
+border C6(t=pi,pi/2) {x=0.02*cos(t)+0.3; y=0.02*sin(t); label=6;}
+border C7(t=0.3,.4) {x=t;y=0.02;label =6;}
+
+border C8(t=3*pi/2,pi) {x=0.02*cos(t)+0.3; y=0.02*sin(t)+0.1; label=6;}
+border C9(t=0.4,0.3) {x=t; y=0.08; label =6;}
+
+border C10(t=2*pi,pi){x=0.02*cos(t)+0.2; y=0.02*sin(t)+0.1; label=7;}
+border C12(t=0.28,0.22){x=t;y=0.1;label=1;}
+
+border C11(t=pi,0){x=0.02*cos(t)+0.2; y=0.02*sin(t); label=7;}
+border C13(t=0.22,0.28){x=t;y=0;label=1;}
+
+int n=10;
+
+
+//plot(C1(4*n)+C2(n)+C3(4*n)+C4(n)+C5(-n*5)+C6(n/2)+C7(n) + C8(n/2)+C9(n) +C10(n)+C11(n)+C12(n)+C13(n));
+mesh Th = buildmesh(C1(2*n)+C2(n)+C3(2*n)+C4(n)+C5(-n*5)+C6(n/2)+C7(n) + C8(n/2)+C9(n) +C10(n)+C11(n)+C12(n/2) +C13(n/2) );
+plot(Th);
+fespace Vh(Th,P2);
+Vh u,v,uu,vv;
+real sqrt2=sqrt(2.);
+real dt=0.01, t=0;
+macro epsilon(u1,u2) [dx(u1),dy(u2),(dy(u1)+dx(u2))/sqrt2] //
+macro div(u,v) ( dx(u)+dy(v) ) //
+
+real E = 70000, nu = 0.3, mu= E/(2*(1+nu));
+real lambda = E*nu/((1+nu)*(1-2*nu));
+func f = 10000*t; 
+func g = -9.81;
+
+
+problem lame([u,v],[uu,vv])= int2d(Th)(
+	lambda*div(u,v)*div(uu,vv)
+	+2.*mu*( epsilon(u,v)'*epsilon(uu,vv) ) )
+	- int1d(Th,2)(f*uu)
+	- int2d(Th)(g*vv)
+	+ on(4,u=0,v=0);
+for (int i=0;i<100;i++)
+{
+	t+=dt;
+	lame;
+	mesh th1 = movemesh(Th, [x+u, y+v]);
+	plot(th1);
+	//savemesh(th1,);
+}

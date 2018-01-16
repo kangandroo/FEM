@@ -1,0 +1,38 @@
+border C1(t=0,0.4){x = t; y = 0; label = 1;}
+border C2(t=0,0.1){x = 0.4; y = t; label = 2;}
+border C3(t=0,0.4){x = 0.4-t; y = 0.1; label = 3;}
+border C4(t=0,0.1){x = 0; y = 0.1-t; label = 4;}
+border C5(t=0,2*pi) {x=0.02*cos(t)+0.2; y=0.02*sin(t)+0.05; label=5;}
+int n=10;
+mesh Th = buildmesh(C1(4*n)+C2(n)+C3(4*n)+C4(n)+C5(-n*5));
+//plot(C1(4*n)+C2(n)+C3(4*n)+C4(n)+C5(-n*5));
+//plot(Th);
+fespace Vh(Th,P2);
+Vh u,v,uu,vv;
+real sqrt2=sqrt(2.);
+macro epsilon(u1,u2) [dx(u1),dy(u2),(dy(u1)+dx(u2))/sqrt2] //
+macro div(u,v) ( dx(u)+dy(v) ) //
+
+//region điều kiện đề bài
+real E = 70000, nu = 0.3, mu= E/(2*(1+nu));
+real lambda = E*nu/((1+nu)*(1-2*nu));
+func f = -5000;
+func g = -9.81;
+//endregion
+
+solve lame([u,v],[uu,vv])= int2d(Th)(
+	lambda*div(u,v)*div(uu,vv)
+	+2.*mu*( epsilon(u,v)'*epsilon(uu,vv) ) )
+	// Điều kiện biên tác dụng lực(tác động 1 lực theo phương x hoặc y vào một biên nào đó)
+	- int1d(Th,2)(f*uu)
+	- int1d(Th,4)(f*uu)
+	- int1d(Th,1)(g*vv)
+	//Điều kiện biên
+	+ on(1,u=0,v=0);
+plot([u,v],wait=1);
+mesh th1 = movemesh(Th, [x+u, y+v]);
+plot(th1,wait=1);
+real dxmin = u[].min;
+real dymin = v[].min;
+cout << " - dep. max x = "<< dxmin<< " y=" << dymin << endl;
+cout << " dep. (20,0) = " << u(20,0) << " " << v(20,0) << endl;

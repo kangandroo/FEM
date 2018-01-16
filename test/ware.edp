@@ -1,0 +1,39 @@
+load "medit"
+int n = 100;
+real T = 1.0;
+real dt = T/n;
+real t = 0.0;
+mesh Th=square(10,10);
+plot(Th);
+func g = 0;
+func u0 = 0;
+func ut = sin(pi*x)*sin(pi*y)*pi*sqrt(2);
+func f = 0;
+func uExact = sin(pi*x)*sin(pi*y)*sin(t*pi*sqrt(2));
+fespace Vh(Th,P2);
+Vh u,v,u2, u1=u0, uex;
+
+solve sol(u2, v) = int2d(Th)(u2 * v)
+- int2d(Th)((dt * ut + u1) * v);
+
+problem thermic(u,v)= int2d(Th)(u*v)
+					+ int2d(Th)(dt*dt*(dx(u2)*dx(v) + dy(u2)*dy(v)))
+					- int2d(Th)((f*dt*dt +2*u2 - u1)*v)
+					+ on(1,2,3,4,u=g);;
+int i = 0;
+int nv = Th.nv;
+for(int i=0;i<n;i++){
+	thermic; 
+	u1=u2;
+	u2=u;
+	t+=dt;
+	savemesh(Th,"Ware."+i+".mesh");
+	savesol("Ware."+i+".sol",Th,u);
+	for (int iter = 0; iter < Th.nv; iter++){
+		uex[][iter] =  uExact(Th(iter).x, Th(iter).y);
+	}
+	savesol("WaveExact." + i + ".sol", Th, uex);
+	savemesh(Th,"WaveExact." + i + ".mesh");
+	real L2error = sqrt(int2d(Th)(u-uExact)^2);
+	cout <<"L2error: " << L2error << endl;
+}

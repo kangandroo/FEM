@@ -1,0 +1,29 @@
+//Bai 1
+mesh a = square(4,4);
+plot(a);
+
+//Bai 2
+border a1(t=0,1){x=1;y=t;}
+border a2(t=0,1){x=t;y=0;}
+border a3(t=0,1){x=1-t;y=1;}
+border a4(t=0,1){x=0;y=1-t;}
+//<1000 diem lag may
+int n = 20;
+mesh Th2 = buildmesh(a1(n)+a2(n)+a3(n)+a4(n));
+plot(Th2);
+
+//Bai 3
+border b(t=0,2*pi){ x=cos(t); y=sin(t);label=1;}
+//so diem chia tren duong tron
+mesh Th3 = buildmesh(b(n)); 
+plot(Th3);
+
+//Bai 4
+border c1(t=0,2){x=2;y=t;}
+border c2(t=0,2){x=t;y=0;}
+border c3(t=0,2){x=2-t;y=2;}
+border c4(t=0,2){x=0;y=2-t;}
+border c(t=0,2*pi){ x=0.5*cos(t)+1; y=0.5*sin(t)+1;}
+//so diem chia tren duong tron
+mesh Th4 = buildmesh(c1(n)+c2(n)+c3(n)+c4(n)+c(-n)); 
+plot(Th4);

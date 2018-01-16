@@ -1,0 +1,25 @@
+border C1(t=0,1){x = 0; 		y=5-10*t;	label=1;}
+border C2(t=0,1){x = 35*t; 		y=-5+3*t;	label=2;}
+border C3(t=0,1){x = 35; 		y=-2+4*t;	label=3;}
+border C4(t=0,1){x = 35-35*t; 	y=3*t+2;	label=4;}
+mesh Th = buildmesh( C1(20)+C2(60)+C3(10)+C4(60));
+real n = 20;
+plot(Th);
+fespace Vh(Th,P2);
+Vh u,v,uu,vv;
+real sqrt2=sqrt(2.);
+macro epsilon(u1,u2) [dx(u1),dy(u2),(dy(u1)+dx(u2))/sqrt2] // EOM
+macro div(u,v) ( dx(u)+dy(v) ) // EOM
+
+real E = 30000, nu = 0.4, mu= E/(2*(1+nu));
+real lambda = E*nu/((1+nu)*(1-2*nu)), 
+f = 10, g=-0.75; //
+solve lame([u,v],[uu,vv])= int2d(Th)(
+							lambda*div(u,v)*div(uu,vv)
+							+2.*mu*( epsilon(u,v)'*epsilon(uu,vv) ) )
+							- int1d(Th,3)(f*vv)
+							- int2d(Th)(g*vv)
+							+ on(1,u=0,v=0);
+plot([u,v],wait=1);
+mesh th1 = movemesh(Th, [x+u*n, y+v*n]);
+plot(th1);
